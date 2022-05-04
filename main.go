@@ -11,6 +11,7 @@ import (
 	"os/exec"
 )
 func ssh_key(w http.ResponseWriter, req *http.Request) {
+	setupCorsResponse(&w, req)
     data, ignore_me_1 := ioutil.ReadFile("/home/jonte/.ssh/id_rsa.pub")
     if ignore_me_1 != nil {
 		exec.Command("ssh-keygen -t rsa -q -P \"\"").Run()
@@ -23,6 +24,7 @@ func main_page(w http.ResponseWriter, req *http.Request) {
 func handleRequests() {
 	http.HandleFunc("/get/ssh_key", ssh_key)
 	http.HandleFunc("/", main_page)
+	http.Handle("/ping/", http.StripPrefix("/ping/", http.FileServer(http.Dir("./ping"))))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 func setupCorsResponse(w *http.ResponseWriter, req *http.Request) {
