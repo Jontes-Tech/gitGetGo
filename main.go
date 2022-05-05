@@ -9,9 +9,10 @@ import (
     "io/ioutil"
 	"os/user"
 	"os/exec"
+	"os"
+	"time"
 )
 func ssh_key(w http.ResponseWriter, req *http.Request) {
-	setupCorsResponse(&w, req)
     data, ignore_me_1 := ioutil.ReadFile("/home/jonte/.ssh/id_rsa.pub")
     if ignore_me_1 != nil {
 		exec.Command("ssh-keygen -t rsa -q -P \"\"").Run()
@@ -21,9 +22,20 @@ func ssh_key(w http.ResponseWriter, req *http.Request) {
 func main_page(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprint(w, "GitGetGo is running. Please visit jontes.page/gitget")
 }
+func config(w http.ResponseWriter, req *http.Request) {
+	setupCorsResponse(&w, req)
+	mail := req.URL.Query().Get("mail")
+    name := req.URL.Query().Get("name")
+	exec.Command("git config --global user.name \"" + name + "\"")
+	exec.Command("git config --global user.email " + mail)
+	fmt.Println("Thanks for using GitGetGo by Jonte, have a nice day.")
+	time.Sleep(2 * time.Second)
+	os.Exit(0)
+}
 func handleRequests() {
 	http.HandleFunc("/get/ssh_key", ssh_key)
 	http.HandleFunc("/", main_page)
+	http.HandleFunc("/config", config)
 	http.Handle("/ping/", http.StripPrefix("/ping/", http.FileServer(http.Dir("./ping"))))
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
